@@ -1,73 +1,100 @@
-# React + TypeScript + Vite
+# Flow Kanban
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+設計書や工程フローと連動してタスクカードを自動生成する、設計連動型カンバンアプリです。
 
-Currently, two official plugins are available:
+## 実装状況
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+現在はMVPのフロントエンド縦 slice と、インメモリ版APIを実装しています。
 
-## React Compiler
+- 工程フローをDAGとして表示
+- プロジェクト開始時に開始工程の最初のタスクを自動生成
+- タスク完了時に同一工程の次タスクを自動生成
+- 工程内の最後のタスク完了時に工程を自動完了
+- 分岐先工程のタスク自動生成
+- 合流工程はすべての前工程完了後に生成
+- 完了済みタスクの未完了戻しを禁止
+- 期限と状態に応じたカード表示
+- WebSocketイベント想定ログの表示
+- 工程、接続、タスク定義の追加UI
+- Fastify REST API
+- プロジェクト単位WebSocket
+- Prisma schema
+- Vitestによるドメインテスト
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+PostgreSQL永続化とPrisma repository実装は次の実装対象です。
 
-## Expanding the ESLint configuration
+## アーキテクチャ
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Bulletproof Reactを参考に、責務でディレクトリを分けています。
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```txt
+src/
+- app
+- components/ui
+- entities/flow
+- features/flow-kanban
+- shared/lib
+server/
+- app.ts
+- routes.ts
+- realtime.ts
+- flow-store.ts
+prisma/
+- schema.prisma
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+主な実装:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `src/entities/flow/types.ts`: ドメイン型
+- `src/entities/flow/fixtures.ts`: 初期データ
+- `src/features/flow-kanban/domain/flow-domain.ts`: 開始判定、DAG検証、タスク生成、完了処理
+- `src/features/flow-kanban/model/use-flow-kanban.ts`: UI向け状態管理
+- `src/features/flow-kanban/ui`: 画面コンポーネント
+- `server/routes.ts`: REST API
+- `server/realtime.ts`: WebSocket接続管理
+- `prisma/schema.prisma`: PostgreSQL向けDB schema
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 開発
+
+```bash
+npm install
+npm run dev
 ```
+
+APIサーバー:
+
+```bash
+npm run dev:api
+```
+
+デフォルトでは `http://127.0.0.1:4000` で起動します。
+
+## 検証
+
+```bash
+npm run build
+npm run lint
+npm run test
+```
+
+## 技術スタック
+
+- Vite
+- React
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- React Flow
+- dnd-kit
+- date-fns
+- lucide-react
+- Fastify
+- Prisma
+- Vitest
+
+## 次の実装候補
+
+- PostgreSQL永続化
+- Prisma repository実装
+- `POST /tasks/:taskId/complete` のトランザクション化
+- Playwrightによる主要フローE2E
