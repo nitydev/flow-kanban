@@ -20,18 +20,18 @@ export function ProcessFlow({ state, getProcessStatus }: ProcessFlowProps) {
           position: process.position,
           data: {
             label: (
-              <div className="min-w-45 space-y-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-left shadow-sm">
+              <div className="min-w-45 space-y-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-left shadow-sm dark:border-slate-600 dark:bg-slate-800">
                 <div className="flex items-center gap-2">
                   {status === 'completed' ? (
                     <CheckCircle2 className="size-4 text-emerald-600" />
                   ) : status === 'running' ? (
                     <PlayCircle className="size-4 text-sky-600" />
                   ) : (
-                    <Circle className="size-4 text-slate-400" />
+                    <Circle className="size-4 text-slate-400 dark:text-slate-500" />
                   )}
-                  <span className="text-sm font-semibold text-slate-900">{process.name}</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{process.name}</span>
                 </div>
-                <p className="line-clamp-2 text-xs text-slate-500">{process.description || '説明なし'}</p>
+                <p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{process.description || '説明なし'}</p>
               </div>
             ),
           },
@@ -55,7 +55,7 @@ export function ProcessFlow({ state, getProcessStatus }: ProcessFlowProps) {
   )
 
   return (
-    <div className="h-[360px] overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+    <div className="h-[360px] overflow-hidden rounded-md border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
       <ReactFlow nodes={nodes} edges={edges} fitView minZoom={0.4} proOptions={{ hideAttribution: true }}>
         <Background />
         <Controls showInteractive={false} />

@@ -21,17 +21,17 @@ export function DesignerPanel({ state, onAddProcess, onAddTemplate, onConnect }:
 
   return (
     <aside className="space-y-4">
-      <section className="rounded-md border border-slate-200 bg-white p-4">
+      <section className="rounded-md border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="mb-3 flex items-center gap-2">
-          <Plus className="size-4 text-slate-500" />
-          <h3 className="text-sm font-semibold text-slate-900">工程追加</h3>
+          <Plus className="size-4 text-slate-500 dark:text-slate-400" />
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">工程追加</h3>
         </div>
         <div className="flex gap-2">
           <input
             value={processName}
             onChange={(event) => setProcessName(event.target.value)}
             placeholder="例: リリース"
-            className="min-w-0 flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-400"
+            className="min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
           <button
             type="button"
@@ -41,17 +41,17 @@ export function DesignerPanel({ state, onAddProcess, onAddTemplate, onConnect }:
                 setProcessName('')
               }
             }}
-            className="rounded-md bg-slate-950 px-3 py-2 text-sm font-medium text-white"
+            className="rounded-md bg-slate-950 px-3 py-2 text-sm font-medium text-white dark:bg-sky-600 dark:hover:bg-sky-500"
           >
             追加
           </button>
         </div>
       </section>
 
-      <section className="rounded-md border border-slate-200 bg-white p-4">
+      <section className="rounded-md border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="mb-3 flex items-center gap-2">
-          <SendHorizontal className="size-4 text-slate-500" />
-          <h3 className="text-sm font-semibold text-slate-900">接続追加</h3>
+          <SendHorizontal className="size-4 text-slate-500 dark:text-slate-400" />
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">接続追加</h3>
         </div>
         <div className="grid gap-2">
           <ProcessSelect processes={state.processes} value={fromProcessId} onChange={setFromProcessId} />
@@ -59,17 +59,17 @@ export function DesignerPanel({ state, onAddProcess, onAddTemplate, onConnect }:
           <button
             type="button"
             onClick={() => onConnect(fromProcessId, toProcessId)}
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700"
+            className="rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             接続する
           </button>
         </div>
       </section>
 
-      <section className="rounded-md border border-slate-200 bg-white p-4">
+      <section className="rounded-md border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="mb-3 flex items-center gap-2">
-          <Route className="size-4 text-slate-500" />
-          <h3 className="text-sm font-semibold text-slate-900">タスク定義追加</h3>
+          <Route className="size-4 text-slate-500 dark:text-slate-400" />
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">タスク定義追加</h3>
         </div>
         <div className="grid gap-2">
           <ProcessSelect processes={state.processes} value={templateProcessId} onChange={setTemplateProcessId} />
@@ -77,13 +77,13 @@ export function DesignerPanel({ state, onAddProcess, onAddTemplate, onConnect }:
             value={templateTitle}
             onChange={(event) => setTemplateTitle(event.target.value)}
             placeholder="例: 動作確認を行う"
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-400"
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
           <input
             value={dueDate}
             onChange={(event) => setDueDate(event.target.value)}
             type="date"
-            className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-400"
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
           <button
             type="button"
@@ -93,7 +93,7 @@ export function DesignerPanel({ state, onAddProcess, onAddTemplate, onConnect }:
                 setTemplateTitle('')
               }
             }}
-            className="rounded-md bg-slate-950 px-3 py-2 text-sm font-medium text-white"
+            className="rounded-md bg-slate-950 px-3 py-2 text-sm font-medium text-white dark:bg-sky-600 dark:hover:bg-sky-500"
           >
             定義を追加
           </button>
@@ -116,7 +116,7 @@ function ProcessSelect({
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400"
+      className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
     >
       {processes.map((process) => (
         <option key={process.id} value={process.id}>

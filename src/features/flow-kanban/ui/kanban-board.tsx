@@ -57,13 +57,13 @@ function KanbanColumn({ id, label, state, tasks }: KanbanColumnProps) {
     <section
       ref={setNodeRef}
       className={cn(
-        'min-h-80 rounded-md border border-slate-200 bg-slate-100/70 p-3 transition-colors',
-        isOver && 'border-sky-400 bg-sky-50',
+        'min-h-80 rounded-md border border-slate-200 bg-slate-100/70 p-3 transition-colors dark:border-slate-700 dark:bg-slate-950/70',
+        isOver && 'border-sky-400 bg-sky-50 dark:border-sky-500 dark:bg-sky-950',
       )}
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900">{label}</h3>
-        <span className="rounded bg-white px-2 py-0.5 text-xs text-slate-500">{tasks.length}</span>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</h3>
+        <span className="rounded bg-white px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">{tasks.length}</span>
       </div>
 
       <div className="space-y-3">
@@ -71,7 +71,7 @@ function KanbanColumn({ id, label, state, tasks }: KanbanColumnProps) {
           <TaskCard key={task.id} state={state} task={task} />
         ))}
         {tasks.length === 0 ? (
-          <div className="rounded-md border border-dashed border-slate-300 bg-white/60 px-3 py-8 text-center text-sm text-slate-400">
+          <div className="rounded-md border border-dashed border-slate-300 bg-white/60 px-3 py-8 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-500">
             タスクなし
           </div>
         ) : null}
@@ -98,27 +98,27 @@ function TaskCard({ state, task }: { state: FlowKanbanState; task: Task }) {
       {...listeners}
       {...attributes}
       className={cn(
-        'cursor-grab rounded-md border bg-white p-3 text-left shadow-sm transition-shadow active:cursor-grabbing',
+        'cursor-grab rounded-md border bg-white p-3 text-left shadow-sm transition-shadow active:cursor-grabbing dark:bg-slate-800',
         task.status === 'done' && 'cursor-default opacity-75',
-        tone === 'complete' && 'border-emerald-200 bg-emerald-50',
-        tone === 'overdue' && 'border-rose-300 bg-rose-50',
-        tone === 'dueToday' && 'border-amber-300 bg-amber-50',
-        tone === 'soon' && 'border-sky-300 bg-sky-50',
-        tone === 'normal' && 'border-slate-200',
+        tone === 'complete' && 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950',
+        tone === 'overdue' && 'border-rose-300 bg-rose-50 dark:border-rose-800 dark:bg-rose-950',
+        tone === 'dueToday' && 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950',
+        tone === 'soon' && 'border-sky-300 bg-sky-50 dark:border-sky-800 dark:bg-sky-950',
+        tone === 'normal' && 'border-slate-200 dark:border-slate-700',
       )}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
-        <h4 className="text-sm font-semibold text-slate-950">{task.title}</h4>
+        <h4 className="text-sm font-semibold text-slate-950 dark:text-slate-50">{task.title}</h4>
         {tone === 'complete' ? (
           <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
         ) : tone === 'overdue' || tone === 'dueToday' ? (
           <AlertTriangle className="size-4 shrink-0 text-amber-600" />
         ) : (
-          <CalendarClock className="size-4 shrink-0 text-slate-400" />
+          <CalendarClock className="size-4 shrink-0 text-slate-400 dark:text-slate-500" />
         )}
       </div>
-      <p className="mb-3 text-xs leading-5 text-slate-600">{task.description}</p>
-      <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+      <p className="mb-3 text-xs leading-5 text-slate-600 dark:text-slate-300">{task.description}</p>
+      <div className="flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
         <span>{process?.name ?? '工程なし'}</span>
         <time>{task.dueDate}</time>
       </div>
