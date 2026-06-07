@@ -2,6 +2,10 @@
 
 設計書や工程フローと連動してタスクカードを自動生成する、設計連動型カンバンアプリです。
 
+## 公開URL
+
+https://narisimataiki812-dotcom.github.io/Kanban2/
+
 ## V1.3
 
 - 初回アクセス時に初心者向けチュートリアルを自動表示
@@ -92,6 +96,8 @@ prisma/
 npm install
 npm run dev
 ```
+
+`main`または`dev`ブランチへpushすると、GitHub Actionsで検証・ビルド後にGitHub Pagesへ自動公開されます。
 
 APIサーバー:
 
