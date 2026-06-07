@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/Kanban2/',
+  base: '/flow-kanban/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

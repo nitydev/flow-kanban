@@ -4,7 +4,7 @@
 
 ## 公開URL
 
-https://narisimataiki812-dotcom.github.io/Kanban2/
+https://nitydev.github.io/flow-kanban/
 
 ## V1.3
 
