@@ -6,9 +6,16 @@ import {
   createEdge,
   createProcess,
   createTaskTemplate,
+  deleteEdge,
+  deleteProcess,
+  deleteTaskTemplate,
   getProcessRuntimeStatus,
   getSortedTemplates,
+  moveProcess,
+  moveTaskTemplate,
   startProject,
+  updateProcess,
+  updateTaskTemplate,
   updateTaskStatus,
   validateProjectStart,
 } from '../domain/flow-domain'
@@ -49,8 +56,36 @@ export function useFlowKanban() {
     commit((current) => createEdge(current, fromProcessId, toProcessId))
   }
 
+  function editProcess(processId: string, name: string, description: string) {
+    commit((current) => updateProcess(current, processId, name, description))
+  }
+
+  function positionProcess(processId: string, position: { x: number; y: number }) {
+    setState((current) => moveProcess(current, processId, position).state)
+  }
+
+  function removeProcess(processId: string) {
+    commit((current) => deleteProcess(current, processId))
+  }
+
+  function disconnectProcesses(edgeId: string) {
+    commit((current) => deleteEdge(current, edgeId))
+  }
+
   function addTemplate(processId: string, title: string, dueDate = addDaysIso(3)) {
     commit((current) => createTaskTemplate(current, processId, title, dueDate))
+  }
+
+  function editTemplate(templateId: string, title: string, dueDate: string) {
+    commit((current) => updateTaskTemplate(current, templateId, title, dueDate))
+  }
+
+  function removeTemplate(templateId: string) {
+    commit((current) => deleteTaskTemplate(current, templateId))
+  }
+
+  function reorderTemplate(templateId: string, direction: 'up' | 'down') {
+    commit((current) => moveTaskTemplate(current, templateId, direction))
   }
 
   function getProcessStatus(processId: string) {
@@ -69,9 +104,16 @@ export function useFlowKanban() {
       addProcess,
       addTemplate,
       connectProcesses,
+      disconnectProcesses,
+      editProcess,
+      editTemplate,
       getProcessStatus,
       getTemplates,
       moveTask,
+      positionProcess,
+      removeProcess,
+      removeTemplate,
+      reorderTemplate,
       start,
     },
   }

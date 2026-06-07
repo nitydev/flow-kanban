@@ -1,11 +1,54 @@
 import { describe, expect, it } from 'vitest'
 
-import { initialFlowState } from '@/entities/flow/fixtures'
 import type { FlowKanbanState } from '@/entities/flow/types'
-import { completeTask, startProject, updateTaskStatus } from './flow-domain'
+import {
+  completeTask,
+  deleteProcess,
+  deleteTaskTemplate,
+  moveProcess,
+  moveTaskTemplate,
+  startProject,
+  updateTaskStatus,
+} from './flow-domain'
 
 function freshState(): FlowKanbanState {
-  return structuredClone(initialFlowState)
+  return {
+    project: { id: 'project', name: 'test', description: '', status: 'draft' },
+    processes: [
+      { id: 'process_requirements', name: '要件', description: '', position: { x: 0, y: 0 }, completedAt: null },
+      { id: 'process_design', name: '設計', description: '', position: { x: 0, y: 0 }, completedAt: null },
+      { id: 'process_frontend', name: 'FE', description: '', position: { x: 0, y: 0 }, completedAt: null },
+      { id: 'process_backend', name: 'BE', description: '', position: { x: 0, y: 0 }, completedAt: null },
+      { id: 'process_test', name: 'テスト', description: '', position: { x: 0, y: 0 }, completedAt: null },
+    ],
+    edges: [
+      { id: 'e1', fromProcessId: 'process_requirements', toProcessId: 'process_design' },
+      { id: 'e2', fromProcessId: 'process_design', toProcessId: 'process_frontend' },
+      { id: 'e3', fromProcessId: 'process_design', toProcessId: 'process_backend' },
+      { id: 'e4', fromProcessId: 'process_frontend', toProcessId: 'process_test' },
+      { id: 'e5', fromProcessId: 'process_backend', toProcessId: 'process_test' },
+    ],
+    taskTemplates: [
+      ['template_req_1', 'process_requirements', 1],
+      ['template_req_2', 'process_requirements', 2],
+      ['template_design_1', 'process_design', 1],
+      ['template_design_2', 'process_design', 2],
+      ['template_fe_1', 'process_frontend', 1],
+      ['template_fe_2', 'process_frontend', 2],
+      ['template_be_1', 'process_backend', 1],
+      ['template_be_2', 'process_backend', 2],
+      ['template_test_1', 'process_test', 1],
+    ].map(([id, processId, orderIndex]) => ({
+      id: String(id),
+      processId: String(processId),
+      title: String(id),
+      description: '',
+      dueDate: '2026-06-30',
+      orderIndex: Number(orderIndex),
+    })),
+    tasks: [],
+    events: [],
+  }
 }
 
 function taskByTemplate(state: FlowKanbanState, templateId: string) {
@@ -77,5 +120,40 @@ describe('flow domain', () => {
 
     expect(result.state.tasks.find((task) => task.id === completedTask.id)?.status).toBe('done')
     expect(result.messages).toContain('完了済みタスクは未完了に戻せません。')
+  })
+
+  it('deletes a process together with its card definitions and connections', () => {
+    const result = deleteProcess(freshState(), 'process_frontend')
+
+    expect(result.state.processes.some((process) => process.id === 'process_frontend')).toBe(false)
+    expect(result.state.taskTemplates.some((template) => template.processId === 'process_frontend')).toBe(false)
+    expect(result.state.edges.some((edge) => edge.fromProcessId === 'process_frontend' || edge.toProcessId === 'process_frontend')).toBe(false)
+  })
+
+  it('reorders and renumbers card definitions after moving and deleting', () => {
+    let state = moveTaskTemplate(freshState(), 'template_req_2', 'up').state
+    expect(state.taskTemplates.find((template) => template.id === 'template_req_2')?.orderIndex).toBe(1)
+
+    state = deleteTaskTemplate(state, 'template_req_2').state
+    expect(state.taskTemplates.find((template) => template.id === 'template_req_1')?.orderIndex).toBe(1)
+  })
+
+  it('protects card definitions after their process has started', () => {
+    const started = startProject(freshState()).state
+    const result = deleteTaskTemplate(started, 'template_req_1')
+
+    expect(result.state.taskTemplates.some((template) => template.id === 'template_req_1')).toBe(true)
+    expect(result.messages).toContain('開始済み工程の設計は変更できません。')
+  })
+
+  it('stores a dragged process position without changing its runtime state', () => {
+    const started = startProject(freshState()).state
+    const result = moveProcess(started, 'process_requirements', { x: 240, y: 180 })
+
+    expect(result.state.processes.find((process) => process.id === 'process_requirements')?.position).toEqual({
+      x: 240,
+      y: 180,
+    })
+    expect(result.state.tasks).toEqual(started.tasks)
   })
 })

@@ -221,6 +221,67 @@ export function createProcess(state: FlowKanbanState, name: string): DomainResul
   }
 }
 
+export function updateProcess(
+  state: FlowKanbanState,
+  processId: string,
+  name: string,
+  description: string,
+): DomainResult {
+  const process = state.processes.find((item) => item.id === processId)
+  if (!process) return { state, messages: ['対象工程が見つかりません。'] }
+  if (!canEditProcessDesign(state, processId)) return designLocked(state)
+
+  return {
+    state: {
+      ...state,
+      processes: state.processes.map((item) =>
+        item.id === processId ? { ...item, name, description } : item,
+      ),
+      events: [createEvent('process.updated', `${name} を更新しました。`), ...state.events],
+    },
+    messages: [`${name} を更新しました。`],
+  }
+}
+
+export function moveProcess(
+  state: FlowKanbanState,
+  processId: string,
+  position: ProcessNode['position'],
+): DomainResult {
+  if (!state.processes.some((process) => process.id === processId)) {
+    return { state, messages: ['対象工程が見つかりません。'] }
+  }
+
+  return {
+    state: {
+      ...state,
+      processes: state.processes.map((process) =>
+        process.id === processId ? { ...process, position } : process,
+      ),
+    },
+    messages: [],
+  }
+}
+
+export function deleteProcess(state: FlowKanbanState, processId: string): DomainResult {
+  const process = state.processes.find((item) => item.id === processId)
+  if (!process) return { state, messages: ['対象工程が見つかりません。'] }
+  if (!canEditProcessDesign(state, processId)) return designLocked(state)
+
+  return {
+    state: {
+      ...state,
+      processes: state.processes.filter((item) => item.id !== processId),
+      edges: state.edges.filter(
+        (edge) => edge.fromProcessId !== processId && edge.toProcessId !== processId,
+      ),
+      taskTemplates: state.taskTemplates.filter((template) => template.processId !== processId),
+      events: [createEvent('process.deleted', `${process.name} を削除しました。`), ...state.events],
+    },
+    messages: [`${process.name} を削除しました。`],
+  }
+}
+
 export function createEdge(
   state: FlowKanbanState,
   fromProcessId: string,
@@ -237,6 +298,10 @@ export function createEdge(
   }
   const source = state.processes.find((process) => process.id === fromProcessId)
   const target = state.processes.find((process) => process.id === toProcessId)
+
+  if (!source || !target) {
+    return { state, messages: ['接続する工程が見つかりません。'] }
+  }
 
   if (fromProcessId === toProcessId) {
     return { state, messages: ['自分自身への接続は作成できません。'] }
@@ -266,12 +331,32 @@ export function createEdge(
   }
 }
 
+export function deleteEdge(state: FlowKanbanState, edgeId: string): DomainResult {
+  const edge = state.edges.find((item) => item.id === edgeId)
+  if (!edge) return { state, messages: ['対象接続が見つかりません。'] }
+  if (!canEditProcessDesign(state, edge.toProcessId)) return designLocked(state)
+
+  return {
+    state: {
+      ...state,
+      edges: state.edges.filter((item) => item.id !== edgeId),
+      events: [createEvent('process.disconnected', '工程の接続を削除しました。'), ...state.events],
+    },
+    messages: ['工程の接続を削除しました。'],
+  }
+}
+
 export function createTaskTemplate(
   state: FlowKanbanState,
   processId: string,
   title: string,
   dueDate: string,
 ): DomainResult {
+  if (!state.processes.some((process) => process.id === processId)) {
+    return { state, messages: ['対象工程が見つかりません。'] }
+  }
+  if (!canEditProcessDesign(state, processId)) return designLocked(state)
+
   const orderIndex = getSortedTemplates(state, processId).length + 1
   const template: TaskTemplate = {
     id: createId('template'),
@@ -292,6 +377,82 @@ export function createTaskTemplate(
   }
 }
 
+export function updateTaskTemplate(
+  state: FlowKanbanState,
+  templateId: string,
+  title: string,
+  dueDate: string,
+): DomainResult {
+  const template = state.taskTemplates.find((item) => item.id === templateId)
+  if (!template) return { state, messages: ['対象カード定義が見つかりません。'] }
+  if (!canEditProcessDesign(state, template.processId)) return designLocked(state)
+
+  return {
+    state: {
+      ...state,
+      taskTemplates: state.taskTemplates.map((item) =>
+        item.id === templateId ? { ...item, title, dueDate } : item,
+      ),
+      events: [createEvent('task.updated', `${title} の定義を更新しました。`), ...state.events],
+    },
+    messages: [`${title} の定義を更新しました。`],
+  }
+}
+
+export function deleteTaskTemplate(state: FlowKanbanState, templateId: string): DomainResult {
+  const template = state.taskTemplates.find((item) => item.id === templateId)
+  if (!template) return { state, messages: ['対象カード定義が見つかりません。'] }
+  if (!canEditProcessDesign(state, template.processId)) return designLocked(state)
+
+  const remaining = normalizeTemplateOrder(
+    state.taskTemplates.filter((item) => item.id !== templateId),
+    template.processId,
+  )
+  return {
+    state: {
+      ...state,
+      taskTemplates: remaining,
+      events: [createEvent('task.deleted', `${template.title} の定義を削除しました。`), ...state.events],
+    },
+    messages: [`${template.title} の定義を削除しました。`],
+  }
+}
+
+export function moveTaskTemplate(
+  state: FlowKanbanState,
+  templateId: string,
+  direction: 'up' | 'down',
+): DomainResult {
+  const template = state.taskTemplates.find((item) => item.id === templateId)
+  if (!template) return { state, messages: ['対象カード定義が見つかりません。'] }
+  if (!canEditProcessDesign(state, template.processId)) return designLocked(state)
+
+  const sorted = getSortedTemplates(state, template.processId)
+  const currentIndex = sorted.findIndex((item) => item.id === templateId)
+  const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+  if (nextIndex < 0 || nextIndex >= sorted.length) {
+    return { state, messages: ['これ以上移動できません。'] }
+  }
+
+  const currentTemplate = sorted[currentIndex]!
+  sorted[currentIndex] = sorted[nextIndex]!
+  sorted[nextIndex] = currentTemplate
+  const reorderedIds = new Map(sorted.map((item, index) => [item.id, index + 1]))
+
+  return {
+    state: {
+      ...state,
+      taskTemplates: state.taskTemplates.map((item) =>
+        item.processId === template.processId
+          ? { ...item, orderIndex: reorderedIds.get(item.id)! }
+          : item,
+      ),
+      events: [createEvent('task.reordered', `${template.title} の工程順を変更しました。`), ...state.events],
+    },
+    messages: [`${template.title} の工程順を変更しました。`],
+  }
+}
+
 export function getSortedTemplates(state: FlowKanbanState, processId: string) {
   return state.taskTemplates
     .filter((template) => template.processId === processId)
@@ -309,6 +470,28 @@ function canStartProcess(state: FlowKanbanState, processId: string) {
     const process = state.processes.find((item) => item.id === incomingId)
     return Boolean(process?.completedAt)
   })
+}
+
+function canEditProcessDesign(state: FlowKanbanState, processId: string) {
+  return getProcessRuntimeStatus(state, processId) === 'not_started'
+}
+
+function designLocked(state: FlowKanbanState): DomainResult {
+  return { state, messages: ['開始済み工程の設計は変更できません。'] }
+}
+
+function normalizeTemplateOrder(taskTemplates: TaskTemplate[], processId: string) {
+  const orderById = new Map(
+    taskTemplates
+      .filter((template) => template.processId === processId)
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .map((template, index) => [template.id, index + 1]),
+  )
+  return taskTemplates.map((template) =>
+    template.processId === processId
+      ? { ...template, orderIndex: orderById.get(template.id)! }
+      : template,
+  )
 }
 
 function createFirstTaskIfMissing(state: FlowKanbanState, processId: string) {

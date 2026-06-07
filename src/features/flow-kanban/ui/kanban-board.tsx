@@ -28,7 +28,7 @@ export function KanbanBoard({ state, onMoveTask }: KanbanBoardProps) {
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      <div className="grid gap-3 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
@@ -57,13 +57,13 @@ function KanbanColumn({ id, label, state, tasks }: KanbanColumnProps) {
     <section
       ref={setNodeRef}
       className={cn(
-        'min-h-80 rounded-md border border-slate-200 bg-slate-100/70 p-3 transition-colors dark:border-slate-700 dark:bg-slate-950/70',
-        isOver && 'border-sky-400 bg-sky-50 dark:border-sky-500 dark:bg-sky-950',
+        'min-h-80 rounded-2xl border border-slate-200/80 bg-slate-100/55 p-3.5 transition-all dark:border-slate-800 dark:bg-slate-950/45',
+        isOver && 'border-violet-400 bg-violet-50/80 ring-4 ring-violet-500/10 dark:border-violet-500 dark:bg-violet-950/30',
       )}
     >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</h3>
-        <span className="rounded bg-white px-2 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">{tasks.length}</span>
+        <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">{label}</h3>
+        <span className="grid size-6 place-items-center rounded-full bg-white text-[10px] font-bold text-slate-500 shadow-sm dark:bg-slate-800 dark:text-slate-400">{tasks.length}</span>
       </div>
 
       <div className="space-y-3">
@@ -71,7 +71,7 @@ function KanbanColumn({ id, label, state, tasks }: KanbanColumnProps) {
           <TaskCard key={task.id} state={state} task={task} />
         ))}
         {tasks.length === 0 ? (
-          <div className="rounded-md border border-dashed border-slate-300 bg-white/60 px-3 py-8 text-center text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-500">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white/50 px-3 py-10 text-center text-xs font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-500">
             タスクなし
           </div>
         ) : null}
@@ -98,7 +98,7 @@ function TaskCard({ state, task }: { state: FlowKanbanState; task: Task }) {
       {...listeners}
       {...attributes}
       className={cn(
-        'cursor-grab rounded-md border bg-white p-3 text-left shadow-sm transition-shadow active:cursor-grabbing dark:bg-slate-800',
+        'cursor-grab rounded-2xl border bg-white p-4 text-left shadow-[0_10px_30px_-22px_rgba(15,23,42,0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-20px_rgba(15,23,42,0.45)] active:cursor-grabbing dark:bg-slate-800',
         task.status === 'done' && 'cursor-default opacity-75',
         tone === 'complete' && 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950',
         tone === 'overdue' && 'border-rose-300 bg-rose-50 dark:border-rose-800 dark:bg-rose-950',
