@@ -100,7 +100,7 @@ export function FlowKanbanPage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold tracking-tight">Flow Kanban</span>
-                <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">V1.3</span>
+                <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">V0.3</span>
               </div>
               <p className="text-[11px] text-slate-400">Workflow workspace</p>
             </div>
