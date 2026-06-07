@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Layers3,
   LifeBuoy,
+  FlaskConical,
   Moon,
   PanelLeft,
   Sparkles,
@@ -160,6 +161,17 @@ export function FlowKanbanPage() {
 
       <div className="lg:pl-72">
         <div className="mx-auto w-full max-w-[1500px] px-4 py-5 lg:px-8 lg:py-8">
+          <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-amber-900 shadow-sm dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">
+            <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+              <FlaskConical className="size-3.5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold">このアプリは現在開発中のV0.3プレビュー版です</p>
+              <p className="mt-1 text-[11px] leading-5 text-amber-700 dark:text-amber-300">
+                機能や画面は予告なく変更されます。入力した設計データはブラウザを閉じると失われる場合があります。
+              </p>
+            </div>
+          </div>
           <PageTopBar page={page} onOpenNav={() => setNavOpen(true)} />
 
           {page === 'overview' && (
