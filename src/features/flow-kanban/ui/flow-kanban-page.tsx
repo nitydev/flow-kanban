@@ -6,6 +6,7 @@ import {
   GitBranch,
   LayoutDashboard,
   Layers3,
+  LifeBuoy,
   Moon,
   PanelLeft,
   Sparkles,
@@ -22,12 +23,14 @@ import { cn } from '@/lib/utils'
 import { DesignerPanel } from './designer-panel'
 import { EventLog } from './event-log'
 import { KanbanBoard } from './kanban-board'
+import { OnboardingTutorial, type TutorialPage } from './onboarding-tutorial'
 import { ProcessFlow } from './process-flow'
 import { ProcessList } from './process-list'
 import { ProjectSummary } from './project-summary'
 import { useFlowKanban } from '../model/use-flow-kanban'
 
 type PageId = 'activity' | 'board' | 'cards' | 'flow' | 'overview'
+const TUTORIAL_STORAGE_KEY = 'flow-kanban-v1.3-tutorial-completed'
 
 const pages: Array<{ id: PageId; label: string; description: string; icon: LucideIcon }> = [
   { id: 'overview', label: '概要', description: '状態と開始条件', icon: LayoutDashboard },
@@ -42,6 +45,8 @@ export function FlowKanbanPage() {
   const { theme, toggleTheme } = useTheme()
   const [page, setPage] = useState<PageId>(getPageFromHash)
   const [navOpen, setNavOpen] = useState(false)
+  const [tutorialOpen, setTutorialOpen] = useState(() => window.localStorage.getItem(TUTORIAL_STORAGE_KEY) !== 'true')
+  const [tutorialStep, setTutorialStep] = useState(0)
 
   useEffect(() => {
     const handleHashChange = () => setPage(getPageFromHash())
@@ -57,6 +62,17 @@ export function FlowKanbanPage() {
     window.history.pushState(null, '', `#${nextPage}`)
     setPage(nextPage)
     setNavOpen(false)
+  }
+
+  function finishTutorial() {
+    window.localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true')
+    setTutorialOpen(false)
+  }
+
+  function openTutorial() {
+    setTutorialStep(0)
+    setTutorialOpen(true)
+    navigate('overview')
   }
 
   const sharedProcessListProps = {
@@ -84,7 +100,7 @@ export function FlowKanbanPage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold tracking-tight">Flow Kanban</span>
-                <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">V1.2</span>
+                <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">V1.3</span>
               </div>
               <p className="text-[11px] text-slate-400">Workflow workspace</p>
             </div>
@@ -129,6 +145,10 @@ export function FlowKanbanPage() {
             </div>
             <p className="mt-2 line-clamp-2 text-xs font-semibold text-slate-700 dark:text-slate-200">{state.project.name}</p>
           </div>
+          <button type="button" onClick={openTutorial} className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900">
+            <LifeBuoy className="size-4" />
+            はじめてガイド
+          </button>
           <button type="button" onClick={toggleTheme} className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900">
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
             {theme === 'dark' ? 'ライトモード' : 'ダークモード'}
@@ -184,6 +204,18 @@ export function FlowKanbanPage() {
           {page === 'activity' && <EventLog events={state.events} expanded />}
         </div>
       </div>
+
+      <OnboardingTutorial
+        open={tutorialOpen}
+        stepIndex={tutorialStep}
+        setStepIndex={setTutorialStep}
+        onOpenChange={(open) => {
+          if (!open) finishTutorial()
+          else setTutorialOpen(true)
+        }}
+        onSkip={finishTutorial}
+        onNavigate={(tutorialPage: TutorialPage) => navigate(tutorialPage)}
+      />
     </main>
   )
 }
