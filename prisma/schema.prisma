@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProjectStatus {
+  draft
+  active
+  completed
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  done
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  projects  Project[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  userId      String        @map("user_id")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String        @default("")
+  status      ProjectStatus @default(draft)
+  processes   Process[]
+  edges       ProcessEdge[]
+  tasks       Task[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("projects")
+}
+
+model Process {
+  id            String         @id @default(cuid())
+  projectId     String         @map("project_id")
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name          String
+  description   String         @default("")
+  positionX     Float          @default(0) @map("position_x")
+  positionY     Float          @default(0) @map("position_y")
+  completedAt   DateTime?      @map("completed_at")
+  taskTemplates TaskTemplate[]
+  tasks         Task[]
+  fromEdges     ProcessEdge[]  @relation("ProcessFromEdges")
+  toEdges       ProcessEdge[]  @relation("ProcessToEdges")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  @@index([projectId])
+  @@map("processes")
+}
+
+model ProcessEdge {
+  id            String   @id @default(cuid())
+  projectId     String   @map("project_id")
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromProcessId String   @map("from_process_id")
+  fromProcess   Process  @relation("ProcessFromEdges", fields: [fromProcessId], references: [id], onDelete: Cascade)
+  toProcessId   String   @map("to_process_id")
+  toProcess     Process  @relation("ProcessToEdges", fields: [toProcessId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([projectId, fromProcessId, toProcessId])
+  @@index([fromProcessId])
+  @@index([toProcessId])
+  @@map("process_edges")
+}
+
+model TaskTemplate {
+  id          String   @id @default(cuid())
+  processId   String   @map("process_id")
+  process     Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @default("")
+  dueDate     DateTime @map("due_date") @db.Date
+  orderIndex  Int      @map("order_index")
+  tasks       Task[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([processId, orderIndex])
+  @@map("task_templates")
+}
+
+model Task {
+  id                      String       @id @default(cuid())
+  projectId               String       @map("project_id")
+  project                 Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  processId               String       @map("process_id")
+  process                 Process      @relation(fields: [processId], references: [id], onDelete: Cascade)
+  taskTemplateId           String       @map("task_template_id")
+  taskTemplate             TaskTemplate @relation(fields: [taskTemplateId], references: [id], onDelete: Restrict)
+  title                   String
+  description             String       @default("")
+  status                  TaskStatus   @default(todo)
+  dueDate                 DateTime     @map("due_date") @db.Date
+  completedAt             DateTime?    @map("completed_at")
+  isTitleOverridden       Boolean      @default(false) @map("is_title_overridden")
+  isDescriptionOverridden Boolean      @default(false) @map("is_description_overridden")
+  createdAt               DateTime     @default(now()) @map("created_at")
+  updatedAt               DateTime     @updatedAt @map("updated_at")
+
+  @@unique([projectId, processId, taskTemplateId])
+  @@index([projectId, status])
+  @@index([processId])
+  @@map("tasks")
+}
