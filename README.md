@@ -97,7 +97,7 @@ npm install
 npm run dev
 ```
 
-`main`または`dev`ブランチへpushすると、GitHub Actionsで検証・ビルド後にGitHub Pagesへ自動公開されます。
+`main`ブランチへマージすると、GitHub Actionsで検証・ビルド後にGitHub Pagesへ自動公開されます。
 
 APIサーバー:
 
